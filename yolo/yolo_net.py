@@ -248,5 +248,6 @@ class YOLONet(object):
 
 def leaky_relu(alpha):
     def op(inputs):
-        return tf.nn.leaky_relu(inputs, alpha=alpha, name='leaky_relu')
+        #return tf.nn.leaky_relu(inputs, alpha=alpha, name='leaky_relu')
+        return tf.nn.relu(inputs, name='relu')
     return op
