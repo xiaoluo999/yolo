@@ -110,12 +110,14 @@ class pascal_voc(object):
             gt_labels.append({'imname': imname,
                               'label': label,
                               'flipped': False})
+        #序列化保存到pascal_train_gt_labels.pkl文件中，下次直接读
         print('Saving gt_labels to: ' + cache_file)
         with open(cache_file, 'wb') as f:
             pickle.dump(gt_labels, f)
         return gt_labels
 
-    #读取图像'data\\pascal_voc\\VOCdevkit\\VOC2007\\JPEGImages\\000005.jpg'
+    #通过txt中的index索引xml文件和jpg文件，获取图像的label.shape=[x_grid,y_grid,25]
+    #最后一维存储顺序为[置信度0或1,原始坐标中心x，中心y，宽，高，20个类别概率onehot]
     def load_pascal_annotation(self, index):
         """
         Load image and bounding boxes info from XML file in the PASCAL VOC
@@ -127,6 +129,7 @@ class pascal_voc(object):
         h_ratio = 1.0 * self.image_size / im.shape[0]
         w_ratio = 1.0 * self.image_size / im.shape[1]
         # im = cv2.resize(im, [self.image_size, self.image_size])
+
         #25=1*5+C，每个bbox有5个预测值
         label = np.zeros((self.cell_size, self.cell_size, 25))
         filename = os.path.join(self.data_path, 'Annotations', index + '.xml')
@@ -143,7 +146,7 @@ class pascal_voc(object):
             y2 = max(min((float(bbox.find('ymax').text) - 1) * h_ratio, self.image_size - 1), 0)
             #将字符串类别转为对应的索引
             cls_ind = self.class_to_ind[obj.find('name').text.lower().strip()]
-            #归一化后448*448的坐标[中心x，中心y，宽，高]
+            #448*448的坐标[中心x，中心y，宽，高]
             boxes = [(x2 + x1) / 2.0, (y2 + y1) / 2.0, x2 - x1, y2 - y1]
             #统计所在的栅格编号
             x_ind = int(boxes[0] * self.cell_size / self.image_size)

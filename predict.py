@@ -85,21 +85,19 @@ class Detector(object):
         boxes = np.reshape(
             output[self.boundary2:],
             (self.cell_size, self.cell_size, self.boxes_per_cell, 4))
-        offset = np.array(
-            [np.arange(self.cell_size)] * self.cell_size * self.boxes_per_cell)
+        offset = np.array([np.arange(self.cell_size)] * self.cell_size * self.boxes_per_cell)
         offset = np.transpose(
             np.reshape(
                 offset,
                 [self.boxes_per_cell, self.cell_size, self.cell_size]),
             (1, 2, 0))
-
-        boxes[:, :, :, 0] += offset
+        #boxes.shape=[7,7,2,4]，这里将box坐标由单个栅格比例转为整图比例
         boxes[:, :, :, 1] += np.transpose(offset, (1, 0, 2))
         boxes[:, :, :, :2] = 1.0 * boxes[:, :, :, 0:2] / self.cell_size
         boxes[:, :, :, 2:] = np.square(boxes[:, :, :, 2:])
 
         boxes *= self.image_size
-
+        #每个栅格的类别概率等于置信度*类别概率
         for i in range(self.boxes_per_cell):
             for j in range(self.num_class):
                 probs[:, :, i, j] = np.multiply(
@@ -196,7 +194,7 @@ def main():
 
     yolo = YOLONet(False)
     weight_file = os.path.join(args.data_dir, args.weight_dir, args.weights)
-    weight_file = r"F:\program\yolo\data\pascal_voc\output\2018_08_02_22_12\yolo-15000"
+    weight_file = r"E:\project\yolo\data\pascal_voc\output\2018_08_06_11_34\yolo-1"
     detector = Detector(yolo, weight_file)
 
     # detect from camera

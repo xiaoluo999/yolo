@@ -41,6 +41,7 @@ class Solver(object):
             self.decay_rate, self.staircase, name='learning_rate')
         self.optimizer = tf.train.GradientDescentOptimizer(
             learning_rate=self.learning_rate)
+        #定义训练方法，最小化所有的loss
         self.train_op = slim.learning.create_train_op(
             self.net.total_loss, self.optimizer, global_step=self.global_step)
 
@@ -63,6 +64,7 @@ class Solver(object):
         for step in range(1, self.max_iter + 1):
 
             load_timer.tic()
+            #get获取batchsize个样本，image.shape=[batch_size,448,448,3],label.shape=[batch_size,7,7,25]
             images, labels = self.data.get()
             load_timer.toc()
             feed_dict = {self.net.images: images,
@@ -70,7 +72,6 @@ class Solver(object):
 
             if step % self.summary_iter == 0:
                 if step % (self.summary_iter * 10) == 0:
-
                     train_timer.tic()
                     summary_str, loss, _ = self.sess.run(
                         [self.summary_op, self.net.total_loss, self.train_op],
@@ -131,6 +132,7 @@ def update_config_paths(data_dir, weights_file):
 
 def main():
     parser = argparse.ArgumentParser()
+    #模型参数文件
     parser.add_argument('--weights', default="YOLO_small.ckpt", type=str)
     parser.add_argument('--data_dir', default="data", type=str)
     parser.add_argument('--threshold', default=0.2, type=float)
